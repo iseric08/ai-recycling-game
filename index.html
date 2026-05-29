@@ -1,1 +1,230 @@
-<!DOCTYPE html><html lang='zh-TW'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><title>AI 回收分類所</title><script src='https://cdn.tailwindcss.com'></script></head><body class='bg-green-50 flex items-center justify-center min-h-screen p-4'><div class='bg-white p-10 rounded-3xl shadow-xl text-center max-w-lg mx-auto border-t-8 border-green-500'><div class='text-7xl mb-6'>♻️</div><h1 class='text-3xl font-bold text-green-700 mb-4'>部署大成功！</h1><p class='text-gray-600 mb-6 leading-relaxed'>太棒了！這是由 <strong>Auto Pages Engine</strong> 自動透過 GitHub API 建立的專屬網頁。<br/>您的「AI 回收分類所」環境已經在雲端準備就緒！</p><div class='text-sm text-gray-500 bg-gray-50 p-4 rounded-xl border border-gray-100'>💡 備註：真實的 React 原始碼通常需要經過 Node.js 環境 (如 Vite 或 Webpack) 編譯打包後，才能完整上傳為靜態檔案。此頁面為 API 串接驗證成功之展示。</div></div></body></html>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 回收分類所</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "lucide-react": "https://esm.sh/lucide-react@0.292.0"
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-green-50">
+  <div id="root"></div>
+  <script type="text/babel" data-type="module">
+    
+import React, { useState, useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
+import { Bot, Droplet, Recycle, Battery, Lightbulb, Droplets, Apple, CheckCircle2, AlertCircle, Sparkles, Info } from 'lucide-react';
+
+const INITIAL_TRASH = [
+  { id: 1, name: '果汁膠樽', type: 'bottle', isDirty: true, needsWash: true, icon: Droplets, correctBins: ['smart'], color: 'text-orange-500' },
+  { id: 2, name: '汽水鋁罐', type: 'can', isDirty: true, needsWash: true, icon: Droplets, correctBins: ['smart'], color: 'text-zinc-400' },
+  { id: 3, name: '廢舊電池', type: 'battery', isDirty: false, needsWash: false, icon: Battery, correctBins: ['ecofun'], color: 'text-stone-700' },
+  { id: 4, name: '廢舊光管', type: 'light', isDirty: false, needsWash: false, icon: Lightbulb, correctBins: ['ecofun'], color: 'text-slate-300' },
+  { id: 5, name: '蘋果核(廚餘)', type: 'food', isDirty: false, needsWash: false, icon: Apple, correctBins: ['food'], color: 'text-red-500' },
+];
+
+const BINS = [
+  { id: 'ecofun', name: '環保Fun站點', desc: '收電池、光管、紙張等', color: 'bg-emerald-100 border-emerald-500 text-emerald-800' },
+  { id: 'smart', name: '智能回收機', desc: '收膠樽、鋁罐', color: 'bg-blue-100 border-blue-500 text-blue-800' },
+  { id: 'food', name: '廚餘收集桶', desc: '收生熟廚餘', color: 'bg-orange-100 border-orange-500 text-orange-800' },
+];
+
+function GameApp() {
+  const [trashItems, setTrashItems] = useState(INITIAL_TRASH);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [aiMessage, setAiMessage] = useState({ text: '你好！我是 AI 環保小助手。請點擊下方的垃圾，幫它們找到正確的家。記得要注意「乾淨回收」喔！', type: 'normal' });
+  const [score, setScore] = useState(0);
+  const [isGameOver, setIsGameOver] = useState(false);
+
+  useEffect(() => {
+    if (trashItems.length === 0 && INITIAL_TRASH.length > 0) {
+      setIsGameOver(true);
+      setAiMessage({ text: '太棒了！你已經成功將所有垃圾正確分類！你現在是「乾淨回收」小達人了！', type: 'success' });
+    }
+  }, [trashItems]);
+
+  const handleSelectItem = (item) => {
+    setSelectedItem(item);
+    if (item.isDirty) {
+      setAiMessage({ text: '你選擇了【' + item.name + '】，它看起來裡面還有殘留物喔...', type: 'warning' });
+    } else {
+      setAiMessage({ text: '你選擇了【' + item.name + '】，請點擊右側對應的回收途徑。', type: 'normal' });
+    }
+  };
+
+  const handleWash = () => {
+    if (!selectedItem) {
+      setAiMessage({ text: '請先從左側選擇一個需要清洗的垃圾喔！', type: 'warning' });
+      return;
+    }
+    if (!selectedItem.needsWash) {
+      setAiMessage({ text: '【' + selectedItem.name + '】不需要清洗，請直接分類回收！', type: 'normal' });
+      return;
+    }
+    if (!selectedItem.isDirty) {
+      setAiMessage({ text: '這個物品已經洗得很乾淨啦，趕快拿去回收吧！', type: 'success' });
+      return;
+    }
+    const updatedItems = trashItems.map(item => 
+      item.id === selectedItem.id ? { ...item, isDirty: false, name: '乾淨的' + item.name } : item
+    );
+    setTrashItems(updatedItems);
+    setSelectedItem({ ...selectedItem, isDirty: false, name: '乾淨的' + selectedItem.name });
+    setAiMessage({ text: '太棒了！嚴格執行「清空、清洗、晾乾」，現在可以回收了！', type: 'success' });
+  };
+
+  const handleDropToBin = (binId) => {
+    if (!selectedItem) {
+      setAiMessage({ text: '請先從左側選擇一個垃圾喔！', type: 'warning' });
+      return;
+    }
+    if (selectedItem.isDirty) {
+      setAiMessage({ text: '錯誤！未清空、清洗、晾乾！錯誤的回收會污染整個回收箱！請先去【清洗區】。', type: 'error' });
+      return;
+    }
+    if (selectedItem.correctBins.includes(binId)) {
+      setTrashItems(trashItems.filter(item => item.id !== selectedItem.id));
+      setSelectedItem(null);
+      setScore(score + 1);
+      setAiMessage({ text: '分類正確！做得好！', type: 'success' });
+    } else {
+      setAiMessage({ text: '哎呀，放錯地方了！【' + selectedItem.name + '】不應該放在這裡，請再想想看。', type: 'error' });
+    }
+  };
+
+  const resetGame = () => {
+    setTrashItems(INITIAL_TRASH);
+    setSelectedItem(null);
+    setScore(0);
+    setIsGameOver(false);
+    setAiMessage({ text: '遊戲已重置，讓我們再來挑戰一次「乾淨回收」吧！', type: 'normal' });
+  };
+
+  return (
+    <div className="min-h-screen bg-green-50 p-4 font-sans text-gray-800">
+      <div className="max-w-5xl mx-auto relative">
+        <header className="bg-white rounded-2xl shadow-sm p-4 mb-6 flex items-center justify-between border-t-4 border-green-500">
+          <div>
+            <h1 className="text-2xl font-bold text-green-700 flex items-center gap-2">
+              <Recycle className="w-8 h-8" /> AI 回收分類所
+            </h1>
+            <p className="text-gray-500 text-sm mt-1">澳門環保局回收途徑實戰訓練</p>
+          </div>
+          <div className="bg-green-100 px-4 py-2 rounded-full font-bold text-green-800 flex items-center gap-2">
+            <span>得分: {score} / {INITIAL_TRASH.length}</span>
+          </div>
+        </header>
+
+        <div className="bg-white rounded-2xl shadow-md p-4 mb-6 flex gap-4 items-start relative overflow-hidden">
+          <div className="absolute -right-4 -top-4 opacity-5"><Bot className="w-48 h-48" /></div>
+          <div className="bg-blue-100 p-3 rounded-full shrink-0 flex items-center justify-center relative shadow-sm z-10">
+            <Bot className="w-10 h-10 text-blue-600" />
+            {aiMessage.type === 'error' && <AlertCircle className="w-5 h-5 text-red-500 absolute -top-1 -right-1 bg-white rounded-full" />}
+            {aiMessage.type === 'success' && <CheckCircle2 className="w-5 h-5 text-green-500 absolute -top-1 -right-1 bg-white rounded-full" />}
+          </div>
+          <div className="flex-1 z-10">
+            <div className={"p-4 rounded-2xl text-lg font-medium shadow-sm transition-colors duration-300 " + 
+              (aiMessage.type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' : 
+               aiMessage.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' : 
+               aiMessage.type === 'warning' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
+               'bg-gray-100 text-gray-700 border border-gray-200')}>
+              {aiMessage.text}
+            </div>
+            <div className="mt-3 flex items-center gap-3 text-sm font-bold text-gray-600 bg-white/60 p-2 rounded-lg inline-flex backdrop-blur-sm border border-gray-100">
+              <Info className="w-4 h-4 text-blue-500" />
+              乾淨回收四部曲：
+              <span className="text-blue-600 bg-blue-50 px-2 py-1 rounded">1. 清空</span> ➔ 
+              <span className="text-blue-600 bg-blue-50 px-2 py-1 rounded">2. 清洗</span> ➔ 
+              <span className="text-blue-600 bg-blue-50 px-2 py-1 rounded">3. 晾乾</span> ➔ 
+              <span className="text-green-600 bg-green-50 px-2 py-1 rounded">4. 回收</span>
+            </div>
+          </div>
+        </div>
+
+        {isGameOver ? (
+          <div className="bg-white rounded-2xl shadow-lg p-10 text-center animate-bounce">
+            <Sparkles className="w-20 h-20 text-yellow-400 mx-auto mb-4" />
+            <h2 className="text-3xl font-bold text-green-600 mb-4">闖關成功！</h2>
+            <p className="text-lg text-gray-600 mb-8">你已經學會了乾淨回收的正確步驟，一起保護澳門的環境吧！</p>
+            <button onClick={resetGame} className="bg-green-500 hover:bg-green-600 text-white text-xl font-bold py-3 px-8 rounded-full shadow-md transition-transform hover:scale-105">
+              再玩一次
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+            <div className="md:col-span-4 bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
+              <h2 className="text-lg font-bold text-gray-700 mb-4 border-b pb-2">1. 選擇垃圾</h2>
+              <div className="grid grid-cols-2 gap-3">
+                {trashItems.map(item => {
+                  const Icon = item.icon;
+                  return (
+                  <button key={item.id} onClick={() => handleSelectItem(item)}
+                    className={"p-3 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-all duration-200 " +
+                      (selectedItem?.id === item.id ? 'border-green-500 bg-green-50 shadow-md transform scale-105 ' : 'border-gray-200 hover:border-green-300 hover:bg-gray-50 ') +
+                      (item.isDirty ? 'opacity-90' : 'opacity-100')
+                    }>
+                    <div className="relative">
+                      <Icon className={"w-10 h-10 " + (item.isDirty ? item.color : 'text-blue-500')} />
+                      {item.isDirty && (
+                        <div className="absolute -bottom-1 -right-1 bg-red-500 w-4 h-4 rounded-full border-2 border-white flex items-center justify-center">
+                          <span className="block w-2 h-0.5 bg-white"></span>
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-sm font-bold text-gray-700 text-center leading-tight">{item.name}</span>
+                    {item.isDirty && <span className="text-xs text-red-500 font-bold bg-red-50 px-1.5 py-0.5 rounded">未清洗</span>}
+                  </button>
+                )})}
+                {trashItems.length === 0 && <div className="col-span-2 text-center text-gray-400 py-8">沒有垃圾了</div>}
+              </div>
+            </div>
+
+            <div className="md:col-span-3 flex items-center justify-center">
+              <button onClick={handleWash} className="w-full h-full min-h-[200px] bg-gradient-to-b from-blue-50 to-blue-100 border-2 border-blue-300 border-dashed rounded-3xl p-6 flex flex-col items-center justify-center gap-4 hover:bg-blue-100 transition-colors group cursor-pointer shadow-sm relative overflow-hidden">
+                <div className="absolute inset-0 bg-blue-400 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                <div className="bg-white p-4 rounded-full shadow-md group-hover:scale-110 transition-transform">
+                  <Droplet className="w-12 h-12 text-blue-500" />
+                </div>
+                <div className="text-center z-10">
+                  <h3 className="text-xl font-bold text-blue-800 mb-1">清洗區</h3>
+                  <p className="text-sm text-blue-600 font-medium">點擊這裡清洗垃圾<br/>(清空 ➔ 清洗 ➔ 晾乾)</p>
+                </div>
+              </button>
+            </div>
+
+            <div className="md:col-span-5 bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
+              <h2 className="text-lg font-bold text-gray-700 mb-4 border-b pb-2">2. 選擇回收途徑</h2>
+              <div className="flex flex-col gap-4">
+                {BINS.map(bin => (
+                  <button key={bin.id} onClick={() => handleDropToBin(bin.id)} className={"w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center gap-4 hover:shadow-md hover:scale-[1.02] active:scale-95 cursor-pointer " + bin.color}>
+                    <div className="bg-white/50 p-3 rounded-lg shrink-0"><Recycle className="w-8 h-8" /></div>
+                    <div>
+                      <h3 className="text-xl font-bold mb-1">{bin.name}</h3>
+                      <p className="text-sm opacity-80">{bin.desc}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const root = createRoot(document.getElementById('root'));
+root.render(<GameApp />);
+
+  </script>
+</body>
+</html>
